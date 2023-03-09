@@ -52,7 +52,7 @@ class AccessLogParserTest extends TestCase
         $this->assertEquals($expectedSuccessRate, $percent);
     }
 
-    private function logParserDataProvider(): array
+    public function logParserDataProvider(): array
     {
         return [
             [

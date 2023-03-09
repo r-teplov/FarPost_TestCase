@@ -1,0 +1,9 @@
+version: "3"
+
+services:
+  php:
+    build:
+      dockerfile: ./docker/php/Dockerfile
+
+    volumes:
+      - .:/var/www

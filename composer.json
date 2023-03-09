@@ -13,16 +13,19 @@
     },
     "require": {
         "php": "^7.4",
-        "fakerphp/faker": "^1.21",
         "symfony/console": "^5.4"
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.6"
+        "phpunit/phpunit": "^9.6",
+        "fakerphp/faker": "^1.21"
     },
     "authors": [
         {
             "name": "r.teplov",
             "email": "r.teplov65@gmail.com"
         }
-    ]
+    ],
+    "scripts": {
+        "tests": "phpunit tests"
+    }
 }
