@@ -6,10 +6,18 @@
             "FarPost\\TestCase\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "FarPost\\TestCase\\Tests\\": "tests/"
+        }
+    },
     "require": {
         "php": "^7.4",
         "fakerphp/faker": "^1.21",
         "symfony/console": "^5.4"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.6"
     },
     "authors": [
         {

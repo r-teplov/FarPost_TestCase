@@ -49,7 +49,7 @@ class AccessLogParser
 
                         $this->failureTimePeriodsCount++;
                         $this->failureTimePeriodsSum += $failurePercent;
-                    } else if ($isFailurePeriodCurrentlyActive()) {
+                    } elseif ($isFailurePeriodCurrentlyActive()) {
                         $this->storeFailureTimePeriod();
                         $this->clearFailureTimePeriod();
                     }
@@ -67,7 +67,14 @@ class AccessLogParser
             $this->accumulatedRowsCount++;
         }
 
-        if ($isFailurePeriodCurrentlyActive()) {
+        $failurePercent = $calculateFailurePercent();
+        if ($isFailurePercentExceedsThreshold($failurePercent)) {
+            if (!$isFailurePeriodCurrentlyActive()) {
+                $this->failureTimePeriodStart = $this->accumulationDate;
+            }
+
+            $this->failureTimePeriodsCount++;
+            $this->failureTimePeriodsSum += $failurePercent;
             $this->storeFailureTimePeriod();
         }
     }
