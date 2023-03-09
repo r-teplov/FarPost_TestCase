@@ -8,7 +8,8 @@
     },
     "require": {
         "php": "^7.4",
-        "fakerphp/faker": "^1.21"
+        "fakerphp/faker": "^1.21",
+        "symfony/console": "^5.4"
     },
     "authors": [
         {

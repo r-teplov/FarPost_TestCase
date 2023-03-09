@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace FarPost\TestCase;
 
-$appDir = __DIR__;
-require_once $appDir . '/../vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 use FarPost\TestCase\Parsers\AccessLogParser;
 use InvalidArgumentException;

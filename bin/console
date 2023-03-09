@@ -1,0 +1,14 @@
+#! /usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use FarPost\TestCase\Commands\GenerateRandomAccessLogCommand;
+use Symfony\Component\Console\Application;
+
+$application = new Application();
+$application->add(new GenerateRandomAccessLogCommand());
+
+$application->run();
