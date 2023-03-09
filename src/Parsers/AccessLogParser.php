@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FarPost\TestCase\Parsers;
 
+use DateTime;
 use Generator;
 
 class AccessLogParser
@@ -13,6 +14,10 @@ class AccessLogParser
     private string $accumulationDate = '';
     private int $accumulatedRowsCount = 0;
     private int $accumulatedFailuresCount = 0;
+
+    private string $failureTimePeriodStart = '';
+    private int $failureTimePeriodsCount = 0;
+    private float $failureTimePeriodsSum = 0;
 
     public function getPeriods(): array
     {
@@ -24,14 +29,10 @@ class AccessLogParser
     {
         $this->periods = [];
 
-        $failureTimePeriodStart = '';
-        $failureTimePeriodsCount = 0;
-        $failureTimePeriodSum = 0;
-
         $isTimePeriodChanged = fn (string $date): bool => $date !== $this->accumulationDate;
         $calculateFailurePercent = fn (): float => $this->accumulatedFailuresCount / ($this->accumulatedRowsCount / 100);
-        $isFailurePercentExceedsThreshold = fn (float $failurePercent): bool => (100 - $failurePercent) > $failureThreshold;
-        $isFailurePeriodCurrentlyActive = fn (string $periodStart): bool => $periodStart !== '';
+        $isFailurePercentExceedsThreshold = fn (float $failurePercent): bool => (100 - $failurePercent) < $failureThreshold;
+        $isFailurePeriodCurrentlyActive = fn (): bool => $this->failureTimePeriodStart !== '';
 
         /** @var array $parts */
         foreach ($this->parseFile($handle) as $parts) {
@@ -41,24 +42,16 @@ class AccessLogParser
                 if ($this->accumulationDate !== '') {
                     $failurePercent = $calculateFailurePercent();
 
-
                     if ($isFailurePercentExceedsThreshold($failurePercent)) {
-                        if (!$isFailurePeriodCurrentlyActive($failureTimePeriodStart)) {
-                            $failureTimePeriodStart = $this->accumulationDate;
+                        if (!$isFailurePeriodCurrentlyActive()) {
+                            $this->failureTimePeriodStart = $this->accumulationDate;
                         }
 
-                        $failureTimePeriodsCount++;
-                        $failureTimePeriodSum += $failurePercent;
-                    } else if ($isFailurePeriodCurrentlyActive($failureTimePeriodStart)) {
-                        $this->periods[] = [
-                            $failureTimePeriodStart,
-                            $this->accumulationDate,
-                            number_format($failureTimePeriodSum / $failureTimePeriodsCount, 2),
-                        ];
-
-                        $failureTimePeriodStart = '';
-                        $failureTimePeriodsCount = 0;
-                        $failureTimePeriodSum = 0;
+                        $this->failureTimePeriodsCount++;
+                        $this->failureTimePeriodsSum += $failurePercent;
+                    } else if ($isFailurePeriodCurrentlyActive()) {
+                        $this->storeFailureTimePeriod();
+                        $this->clearFailureTimePeriod();
                     }
                 }
 
@@ -72,6 +65,10 @@ class AccessLogParser
             }
 
             $this->accumulatedRowsCount++;
+        }
+
+        if ($isFailurePeriodCurrentlyActive()) {
+            $this->storeFailureTimePeriod();
         }
     }
 
@@ -87,5 +84,26 @@ class AccessLogParser
                 (float)$parts[10],
             ];
         }
+    }
+
+    private function storeFailureTimePeriod(): void
+    {
+        $this->periods[] = [
+            $this->formatFailureTime($this->failureTimePeriodStart),
+            $this->formatFailureTime($this->accumulationDate),
+            number_format(100 - ($this->failureTimePeriodsSum / $this->failureTimePeriodsCount), 2),
+        ];
+    }
+
+    private function clearFailureTimePeriod(): void
+    {
+        $this->failureTimePeriodStart = '';
+        $this->failureTimePeriodsCount = 0;
+        $this->failureTimePeriodsSum = 0;
+    }
+
+    private function formatFailureTime(string $date): string
+    {
+        return DateTime::createFromFormat('d/m/Y:H:i:s', $date)->format('H:i:s');
     }
 }
